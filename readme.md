@@ -31,6 +31,12 @@ Open it
 Select file and Voila !
 The sheets are now unprotected.
 
+**On Linux**
+Clone this repository!
+```bash
+cd SheetBreaker
+```
+
 ```bash
 python sheetbreaker_gui.py
 ```
