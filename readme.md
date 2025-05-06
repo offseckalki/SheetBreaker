@@ -1,4 +1,3 @@
-# === README.md ===
 # SheetBreaker
 
 **Version:** 1.2
