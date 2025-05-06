@@ -1,76 +1,57 @@
 import os
 import zipfile
 import shutil
-import xml.etree.ElementTree as ET
+import re
 from pathlib import Path
-from colorama import Fore, Style, init
-from tqdm import tqdm
-
-init(autoreset=True)
-
-ASCII_BANNER = f"""
-{Fore.GREEN}
-  ███████╗██╗  ██╗███████╗████████╗██╗  ██╗██████╗ ███████╗██████╗ 
-  ██╔════╝██║  ██║██╔════╝╚══██╔══╝██║  ██║██╔══██╗██╔════╝██╔══██╗
-  ███████╗███████║█████╗     ██║   ███████║██████╔╝█████╗  ██████╔╝
-  ╚════██║██╔══██║██╔══╝     ██║   ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗
-  ███████║██║  ██║███████╗   ██║   ██║  ██║██║     ███████╗██║  ██║
-  ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝
-              {Style.RESET_ALL}{Fore.CYAN}Break the protection. Own the sheet.{Style.RESET_ALL}
-"""
 
 def remove_protection(sheet_path):
     try:
-        ET.register_namespace('', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main')
-        tree = ET.parse(sheet_path)
-        root = tree.getroot()
-        ns = {'main': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+        with open(sheet_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        new_content = re.sub(r'<sheetProtection[^>]*/>', '', content)
 
-        for elem in root.findall('main:sheetProtection', ns):
-            root.remove(elem)
+        with open(sheet_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
 
-        tree.write(sheet_path, encoding='utf-8', xml_declaration=True)
-    except ET.ParseError:
-        print(f"{Fore.YELLOW}[!] Could not parse {sheet_path}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"[!] Failed to clean {sheet_path}: {e}")
 
 def zip_dir_correctly(output_file, source_dir):
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(source_dir):
+        for root_dir, _, files in os.walk(source_dir):
             for file in files:
-                full_path = os.path.join(root, file)
+                full_path = os.path.join(root_dir, file)
                 rel_path = os.path.relpath(full_path, source_dir)
                 zipf.write(full_path, rel_path)
 
 def unprotect_xlsx(file_path):
     if not file_path.endswith('.xlsx'):
-        print(f"{Fore.RED}[-] File must be .xlsx only.{Style.RESET_ALL}")
+        print("[!] Not an .xlsx file")
         return
 
     base = Path(file_path).stem
     temp_dir = f"{base}_extracted"
     output_file = f"{base}_unprotected.xlsx"
 
-    print(f"{Fore.CYAN}[*] Extracting XLSX contents...{Style.RESET_ALL}")
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(temp_dir)
 
     sheets_dir = Path(temp_dir) / "xl" / "worksheets"
-    sheet_files = list(sheets_dir.glob("*.xml"))
-
-    print(f"{Fore.CYAN}[*] Removing protection from sheets...{Style.RESET_ALL}")
-    for sheet_file in tqdm(sheet_files, desc="Processing Sheets"):
+    for sheet_file in sheets_dir.glob("*.xml"):
         remove_protection(sheet_file)
 
-    print(f"{Fore.CYAN}[*] Repacking XLSX...{Style.RESET_ALL}")
-    zip_dir_correctly(output_file, temp_dir)
+    calc_chain = Path(temp_dir) / "xl" / "calcChain.xml"
+    if calc_chain.exists():
+        calc_chain.unlink()
 
-    print(f"{Fore.GREEN}[+] Unprotected file created: {output_file}{Style.RESET_ALL}")
+    zip_dir_correctly(output_file, temp_dir)
     shutil.rmtree(temp_dir)
+    print(f"[+] Done: {output_file}")
 
 if __name__ == "__main__":
-    print(ASCII_BANNER)
-    path = input(f"{Fore.YELLOW}[?] Enter path to .xlsx file: {Style.RESET_ALL}")
-    if os.path.isfile(path):
-        unprotect_xlsx(path)
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: python sheetbreaker_cli.py <file.xlsx>")
     else:
-        print(f"{Fore.RED}[-] File not found. Check the path and try again.{Style.RESET_ALL}")
+        unprotect_xlsx(sys.argv[1])
