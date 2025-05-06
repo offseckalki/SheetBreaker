@@ -2,19 +2,16 @@ import os
 import zipfile
 import shutil
 import re
-from tkinter import filedialog, messagebox, Tk, Label, Button, ttk, StringVar
+from tkinter import filedialog, messagebox, Tk, Label, Button, ttk, StringVar, Menu
 from pathlib import Path
 
 def remove_protection(sheet_path):
     try:
         with open(sheet_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
         new_content = re.sub(r'<sheetProtection[^>]*/>', '', content)
-
         with open(sheet_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-
     except Exception as e:
         print(f"[!] Failed to clean {sheet_path}: {e}")
 
@@ -68,10 +65,20 @@ def browse_file():
     if file_path:
         unprotect_xlsx_gui(file_path, status_var, progress, root)
 
+def open_link():
+    import webbrowser
+    webbrowser.open("https://offseckalki.github.io")
+
 root = Tk()
 root.title("SheetBreaker GUI")
-root.geometry("500x250")
+root.geometry("500x260")
 root.resizable(False, False)
+
+menubar = Menu(root)
+offsec_menu = Menu(menubar, tearoff=0)
+offsec_menu.add_command(label="offseckalki.github.io", command=open_link)
+menubar.add_cascade(label="offseckalki", menu=offsec_menu)
+root.config(menu=menubar)
 
 status_var = StringVar()
 status_var.set("Ready")
@@ -83,5 +90,6 @@ Label(root, text="Remove protection from XLSX files", font=("Consolas", 10)).pac
 Button(root, text="Select XLSX File", command=browse_file, width=30, height=2, bg="#222", fg="lime", font=("Consolas", 11)).pack(pady=10)
 progress.pack(pady=5)
 Label(root, textvariable=status_var, font=("Consolas", 10)).pack(pady=5)
+Label(root, text="Made with love by @offseckalki", font=("Consolas", 9)).pack(pady=3)
 
 root.mainloop()
