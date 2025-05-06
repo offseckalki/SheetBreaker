@@ -21,6 +21,7 @@ ASCII_BANNER = f"""
 
 def remove_protection(sheet_path):
     try:
+        ET.register_namespace('', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main')
         tree = ET.parse(sheet_path)
         root = tree.getroot()
         ns = {'main': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
@@ -31,6 +32,14 @@ def remove_protection(sheet_path):
         tree.write(sheet_path, encoding='utf-8', xml_declaration=True)
     except ET.ParseError:
         print(f"{Fore.YELLOW}[!] Could not parse {sheet_path}{Style.RESET_ALL}")
+
+def zip_dir_correctly(output_file, source_dir):
+    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, source_dir)
+                zipf.write(full_path, rel_path)
 
 def unprotect_xlsx(file_path):
     if not file_path.endswith('.xlsx'):
@@ -53,8 +62,7 @@ def unprotect_xlsx(file_path):
         remove_protection(sheet_file)
 
     print(f"{Fore.CYAN}[*] Repacking XLSX...{Style.RESET_ALL}")
-    shutil.make_archive(base, 'zip', temp_dir)
-    os.rename(f"{base}.zip", output_file)
+    zip_dir_correctly(output_file, temp_dir)
 
     print(f"{Fore.GREEN}[+] Unprotected file created: {output_file}{Style.RESET_ALL}")
     shutil.rmtree(temp_dir)
