@@ -11,7 +11,7 @@ SheetBreaker is a Python tool (CLI + GUI) to remove sheet-level protection from 
 - **Preserves** all data, formatting, and formulas.
 - **Dual Mode**: GUI and CLI support.
 - **Progress Feedback** in GUI.
-- **Direct Link** to [offseckalki.github.io](https://offseckalki.github.io).
+-[offseckalki.github.io](https://offseckalki.github.io).
 
 ---
 
