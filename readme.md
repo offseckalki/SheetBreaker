@@ -23,7 +23,7 @@ Output will be saved as `file_unprotected.xlsx`
 
 ### 🖥️ Usage (GUI)
 
-**On Windows**
+##**On Windows**
 
 Download the .exe file from [here](https://objects.githubusercontent.com/github-production-release-asset-2e65be/978749497/7c48acac-09cb-4a78-a2c9-90a274fb617b?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20250506%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250506T175807Z&X-Amz-Expires=300&X-Amz-Signature=cea8eebf89212ee6d2cac4362be67c0b274e6fe3206f7a1a8fa4ae6a66e5bc1f&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3DsheetbreakerGUI.exe&response-content-type=application%2Foctet-stream)
 
@@ -33,7 +33,7 @@ Select file and Voila !
 
 The sheets are now unprotected.
 
-**On Linux**
+##**On Linux**
 
 Clone this repository!
 
